@@ -237,74 +237,40 @@ body {
 .player-note code {
   background: rgba(28, 43, 58, 0.08);
   padding: 2px 6px;
-  border-radius: 6px;
+border-radius: 6px;
 }
 
-.player-frame {
-  display: block;
-  width: 100%;
-  max-width: 520px;
-  height: 640px;
+/* VIDEO */
+.video-section {
+  padding: 48px 0;
+  text-align: center;
+}
+
+.video-placeholder {
+  max-width: 640px;
   margin: 0 auto;
-  border: none;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(28, 43, 58, 0.12);
-}
-
-@media (max-width: 640px) {
-  .player-frame {
-    height: 720px;
-  }
-}
-
-/* SCHEDULE */
-.schedule-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.schedule-item {
   background: var(--card);
-  border-radius: 16px;
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  box-shadow: 0 6px 18px rgba(28, 43, 58, 0.08);
+  border: 2px dashed rgba(28, 43, 58, 0.25);
+  border-radius: 20px;
+  padding: 40px 24px;
+  box-shadow: 0 10px 30px rgba(28, 43, 58, 0.08);
 }
 
-.schedule-item__time {
-  font-size: 0.85rem;
-  color: var(--accent-dark);
+.video-placeholder__icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.video-placeholder__title {
+  font-size: 1.25rem;
   font-weight: 700;
-  letter-spacing: 0.4px;
-}
-
-.schedule-item__name {
-  font-weight: 600;
-}
-
-.schedule-item__desc {
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-/* CONTACT */
-.contact-text {
-  color: var(--muted);
   margin-bottom: 8px;
 }
 
-.contact-text a {
-  color: var(--accent-dark);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.contact-text a:hover {
-  text-decoration: underline;
+.video-placeholder__sub {
+  color: var(--muted);
+  margin-bottom: 20px;
 }
 
 /* FOOTER */
