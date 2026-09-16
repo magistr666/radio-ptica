@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Радио птица — онлайн-радио</title>
+  <meta name="description" content="Радио птица — онлайн-радио с лёгкой музыкой, новостями и программой передач.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="#" class="logo">
+        <span class="logo__bird">🐦</span>
+        <span class="logo__text">Радио <b>птица</b></span>
+      </a>
+      <nav class="nav" aria-label="Основная навигация">
+        <a href="#player" class="nav__link">Слушать</a>
+        <a href="#about" class="nav__link">О радио</a>
+        <a href="#schedule" class="nav__link">Программа</a>
+        <a href="#contact" class="nav__link">Контакты</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero__inner">
+        <h1 class="hero__title">Радио <span class="accent">птица</span></h1>
+        <p class="hero__subtitle">Лёгкая музыка, свежие новости и хорошее настроение — 24/7 в эфире.</p>
+        <a href="#player" class="btn btn--primary">▶ Включить эфир</a>
+      </div>
+    </section>
+
+    <section id="player" class="player-section">
+      <div class="container">
+        <h2 class="section-title">Прямой эфир</h2>
+        <div class="player-card">
+          <div class="player-card__art" aria-hidden="true">🐦</div>
+          <div class="player-card__info">
+            <div class="player-card__status">
+              <span class="live-dot"></span>
+              <span id="statusText">Сейчас в эфире</span>
+            </div>
+            <div id="nowPlaying" class="player-card__track">—</div>
+            <audio id="audio" controls preload="none"></audio>
+            <div class="player-card__cta">
+              <button id="playBtn" class="btn btn--primary">▶ Слушать</button>
+            </div>
+          </div>
+        </div>
+        <p class="player-note">Подключите свой поток в <code>js/player.js</code> (переменная <code>STREAM_URL</code>), и плеер заработает.</p>
+      </div>
+    </section>
+
+    <section id="about" class="about-section">
+      <div class="container">
+        <h2 class="section-title">О радио</h2>
+        <p class="about-text">
+          «Радио птица» — независимая онлайн-станция. Мы играем лёгкую музыку,
+          рассказываем городские новости и держим хорошее настроение в эфире
+          круглые сутки. Летаем высоко — звучим везде.
+        </p>
+      </div>
+    </section>
+
+    <section id="schedule" class="schedule-section">
+      <div class="container">
+        <h2 class="section-title">Программа передач</h2>
+        <div class="schedule-grid">
+          <div class="schedule-item">
+            <span class="schedule-item__time">07:00–10:00</span>
+            <span class="schedule-item__name">Утренний разлёт</span>
+            <span class="schedule-item__desc">Бодрая музыка и новости дня</span>
+          </div>
+          <div class="schedule-item">
+            <span class="schedule-item__time">10:00–16:00</span>
+            <span class="schedule-item__name">Дневной перелёт</span>
+            <span class="schedule-item__desc">Лёгкий фон для работы</span>
+          </div>
+          <div class="schedule-item">
+            <span class="schedule-item__time">16:00–20:00</span>
+            <span class="schedule-item__name">Вечерний прилёт</span>
+            <span class="schedule-item__desc">Хиты и рубрики</span>
+          </div>
+          <div class="schedule-item">
+            <span class="schedule-item__time">20:00–07:00</span>
+            <span class="schedule-item__name">Ночное гнездо</span>
+            <span class="schedule-item__desc">Спокойная музыка на ночь</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+      <div class="container">
+        <h2 class="section-title">Контакты</h2>
+        <p class="contact-text">Пишите нам: <a href="mailto:hello@radioptica.ru">hello@radioptica.ru</a></p>
+        <p class="contact-text">Мы в соцсетях: <a href="#">Telegram</a> · <a href="#">ВКонтакте</a></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>© 2026 Радио птица</p>
+    </div>
+  </footer>
+
+  <script src="js/player.js"></script>
+</body>
+</html>
