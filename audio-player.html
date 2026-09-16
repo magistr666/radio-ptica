@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Аудиоплеер</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #12141a;
+    --card: #1c1f28;
+    --card2: #232734;
+    --text: #e8eaf0;
+    --muted: #8b90a0;
+    --accent: #6c8cff;
+    --accent2: #9db4ff;
+  }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 80% -10%, #232a3d 0%, transparent 60%),
+                radial-gradient(900px 500px at -10% 110%, #1d2333 0%, transparent 55%),
+                var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .player {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card);
+    border: 1px solid #2b3040;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  }
+  .cover {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2c3350, #191c26);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .cover img { width: 100%; height: 100%; object-fit: cover; }
+  .cover .placeholder {
+    font-size: 64px;
+    color: var(--muted);
+    animation: spin 8s linear infinite paused;
+  }
+  .player.playing .cover .placeholder { animation-play-state: running; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .track-info { text-align: center; margin-bottom: 22px; }
+  .track-title {
+    font-size: 18px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-artist {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 38px; }
+  .time.right { text-align: right; }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 5px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--accent) 0%, var(--accent) var(--fill, 0%), #2e3343 var(--fill, 0%));
+    outline: none;
+    cursor: pointer;
+    flex: 1;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    margin: 18px 0;
+  }
+  .btn {
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 26px;
+    line-height: 1;
+    transition: transform .1s, color .15s;
+  }
+  .btn:hover { color: var(--accent2); }
+  .btn:active { transform: scale(.92); }
+  .btn.muted { color: var(--muted); }
+  .btn.play {
+    width: 62px; height: 62px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #4a63d6);
+    color: #fff;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(108,140,255,.35);
+  }
+  .btn.play:hover { color: #fff; filter: brightness(1.08); }
+
+  .bottom-row { display: flex; align-items: center; gap: 14px; }
+  .volume { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .volume .icon { font-size: 16px; color: var(--muted); cursor: pointer; }
+  .volume input { flex: 1; }
+  .list-btn {
+    background: var(--card2);
+    border: 1px solid #2e3343;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+  }
+  .list-btn:hover { color: var(--text); border-color: var(--accent); }
+
+  .playlist {
+    margin-top: 18px;
+    border-top: 1px solid #2b3040;
+    padding-top: 14px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .25s ease;
+  }
+  .playlist.open { max-height: 260px; overflow-y: auto; }
+  .playlist-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background .15s;
+  }
+  .playlist-item:hover { background: var(--card2); }
+  .playlist-item.active { color: var(--accent2); }
+  .playlist-item .idx { color: var(--muted); font-size: 12px; min-width: 20px; }
+  .playlist-item .name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .playlist-item .dur { margin-left: auto; color: var(--muted); font-size: 12px; }
+
+  .drop-zone {
+    margin-top: 14px;
+    border: 1px dashed #2e3343;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .drop-zone:hover, .drop-zone.dragover { border-color: var(--accent); color: var(--text); }
+  .drop-zone input { display: none; }
+  .stream-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .stream-row input {
+    flex: 1;
+    background: var(--card2);
+    border: 1px solid #2e3343;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .stream-row input:focus { border-color: var(--accent); }
+  .stream-row input::placeholder { color: var(--muted); }
+  .stream-btn {
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    padding: 0 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: filter .15s;
+    line-height: 1;
+  }
+  .stream-btn:hover { filter: brightness(1.08); }
+  .stream-btn:active { transform: scale(.95); }
+  .ptitsa-btn {
+    margin-top: 10px;
+    width: 100%;
+    font-size: 14px;
+    padding: 9px 12px;
+    background: linear-gradient(135deg, #3a4d8f, #2c3350);
+    border-color: #46579b;
+  }
+  .ptitsa-btn:hover { filter: brightness(1.1); }
+  .playlist-item.stream .name::before { content: "📻 "; }
+  .playlist-item.stream .name { color: var(--accent2); }
+  .playlist-item.stream .dur { display: none; }
+</style>
+</head>
+<body>
+<div class="player" id="player">
+  <div class="cover">
+    <span class="placeholder" id="coverPlaceholder">&#9835;</span>
+    <img id="coverImg" alt="" hidden>
+  </div>
+
+  <div class="track-info">
+    <div class="track-title" id="title">Нет трека</div>
+    <div class="track-artist" id="artist">Добавьте файлы, перетащите или введите URL потока</div>
+  </div>
+
+  <div class="progress">
+    <span class="time" id="curTime">0:00</span>
+    <input type="range" id="seek" min="0" max="100" step="0.1" value="0">
+    <span class="time right" id="totTime">0:00</span>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="prev" title="Предыдущий">&#9198;</button>
+    <button class="btn play" id="play" title="Играть/Пауза">&#9654;</button>
+    <button class="btn" id="next" title="Следующий">&#9197;</button>
+  </div>
+
+  <div class="bottom-row">
+    <div class="volume">
+      <span class="icon" id="muteBtn" title="Звук">&#128266;</span>
+      <input type="range" id="vol" min="0" max="100" value="80">
+    </div>
+    <button class="list-btn" id="listBtn">Плейлист</button>
+  </div>
+
+  <div class="playlist" id="playlist"></div>
+
+  <label class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept="audio/*" multiple>
+    Выбрать файлы или перетащить сюда
+  </label>
+
+  <div class="stream-row">
+    <input type="text" id="streamUrl" placeholder="URL потока (радио / .m3u8 / .mp3)">
+    <button class="stream-btn" id="streamBtn" title="Запустить поток">&#8250;</button>
+  </div>
+  <button class="list-btn ptitsa-btn" id="ptitsaBtn" title="Запустить радио «Птица»">&#128038; Радио «Птица»</button>
+</div>
+
+<script>
+(function () {
+  const audio = new Audio();
+  audio.preload = "metadata";
+
+  const $ = (id) => document.getElementById(id);
+  const title = $("title"), artist = $("artist");
+  const playBtn = $("play"), prevBtn = $("prev"), nextBtn = $("next");
+  const seek = $("seek"), curTime = $("curTime"), totTime = $("totTime");
+  const vol = $("vol"), muteBtn = $("muteBtn");
+  const playlistEl = $("playlist"), listBtn = $("listBtn");
+  const dropZone = $("dropZone"), fileInput = $("fileInput");
+  const streamUrl = $("streamUrl"), streamBtn = $("streamBtn");
+  const ptitsaBtn = $("ptitsaBtn");
+  const coverImg = $("coverImg"), coverPlaceholder = $("coverPlaceholder");
+  const player = $("player");
+
+  let playlist = [];
+  let current = -1;
+
+  function fmt(s) {
+    if (!isFinite(s)) return "0:00";
+    s = Math.floor(s);
+    const m = Math.floor(s / 60), sec = s % 60;
+    return m + ":" + String(sec).padStart(2, "0");
+  }
+
+  function setFill(el) {
+    const min = +el.min || 0, max = +el.max || 100;
+    const pct = ((el.value - min) / (max - min)) * 100;
+    el.style.setProperty("--fill", pct + "%");
+  }
+
+  function loadTrack(i) {
+    if (i < 0 || i >= playlist.length) return;
+    current = i;
+    const t = playlist[i];
+    audio.src = t.url;
+    title.textContent = t.name || "Без названия";
+    artist.textContent = t.artist || "Неизвестный исполнитель";
+    if (t.cover) { coverImg.src = t.cover; coverImg.hidden = false; coverPlaceholder.hidden = true; }
+    else { coverImg.hidden = true; coverPlaceholder.hidden = false; }
+    renderPlaylist();
+    audio.play().catch(() => {});
+  }
+
+  function playPause() {
+    if (!playlist.length) { streamUrl.focus(); return; }
+    if (audio.paused) {
+      if (current < 0) loadTrack(0);
+      else audio.play().catch(() => {});
+    } else audio.pause();
+  }
+
+  function next(autoplay) {
+    if (!playlist.length) return;
+    loadTrack((current + 1) % playlist.length);
+  }
+  function prev() {
+    if (!playlist.length) return;
+    if (audio.currentTime > 3) { audio.currentTime = 0; return; }
+    loadTrack((current - 1 + playlist.length) % playlist.length);
+  }
+
+  function addFiles(files) {
+    const added = [];
+    for (const f of files) {
+      if (!f.type.startsWith("audio/")) continue;
+      playlist.push({ url: URL.createObjectURL(f), name: f.name.replace(/\.[^.]+$/, ""), artist: "", stream: false });
+      added.push(playlist.length - 1);
+    }
+    if (!added.length) return;
+    renderPlaylist();
+    if (current < 0) loadTrack(added[0]);
+  }
+
+  function addStream(url, customName, cover) {
+    url = url.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    playlist.push({ url: url, name: customName || url.replace(/^https?:\/\//i, ""), artist: "Интернет-поток", stream: true, cover: cover || null });
+    renderPlaylist();
+    loadTrack(playlist.length - 1);
+  }
+
+  function renderPlaylist() {
+    playlistEl.innerHTML = "";
+    playlist.forEach((t, i) => {
+      const div = document.createElement("div");
+      div.className = "playlist-item" + (i === current ? " active" : "") + (t.stream ? " stream" : "");
+      div.innerHTML = '<span class="idx">' + (i + 1) + "</span>" +
+        '<span class="name"></span><span class="dur"></span>';
+      div.querySelector(".name").textContent = t.name || "Без названия";
+      div.onclick = () => { playBtn.textContent = "\u275A\u275A"; loadTrack(i); };
+      if (i === current && audio.duration) div.querySelector(".dur").textContent = fmt(audio.duration);
+      playlistEl.appendChild(div);
+    });
+    $("listBtn").textContent = "Плейлист (" + playlist.length + ")";
+    listBtn.classList.toggle("muted", playlist.length > 0);
+  }
+
+  audio.addEventListener("loadedmetadata", () => {
+    seek.max = audio.duration || 0;
+    totTime.textContent = fmt(audio.duration);
+    renderPlaylist();
+  });
+  audio.addEventListener("timeupdate", () => {
+    if (!audio.duration) return;
+    seek.value = audio.currentTime;
+    curTime.textContent = fmt(audio.currentTime);
+    setFill(seek);
+  });
+  audio.addEventListener("ended", () => next(true));
+  audio.addEventListener("play", () => { playBtn.innerHTML = "&#10074;&#10074;"; player.classList.add("playing"); });
+  audio.addEventListener("pause", () => { playBtn.innerHTML = "&#9654;"; player.classList.remove("playing"); });
+  audio.addEventListener("error", () => { if (current >= 0) next(true); });
+
+  seek.addEventListener("input", () => {
+    if (audio.duration) audio.currentTime = seek.value;
+    setFill(seek);
+  });
+  vol.addEventListener("input", () => {
+    audio.volume = vol.value / 100;
+    audio.muted = vol.value == 0;
+    setFill(vol);
+    muteBtn.textContent = audio.muted || audio.volume == 0 ? "\uD83D\uDD07" : "\uD83D\uDD0A";
+  });
+  muteBtn.addEventListener("click", () => {
+    audio.muted = !audio.muted;
+    if (audio.muted) muteBtn.textContent = "\uD83D\uDD07";
+    else { muteBtn.textContent = "\uD83D\uDD0A"; vol.value = audio.volume * 100; setFill(vol); }
+  });
+  playBtn.addEventListener("click", playPause);
+  nextBtn.addEventListener("click", () => next(true));
+  prevBtn.addEventListener("click", prev);
+  listBtn.addEventListener("click", () => playlistEl.classList.toggle("open"));
+
+  fileInput.addEventListener("change", () => addFiles(fileInput.files));
+  streamBtn.addEventListener("click", () => addStream(streamUrl.value));
+  streamUrl.addEventListener("keydown", e => { if (e.key === "Enter") addStream(streamUrl.value); });
+  ptitsaBtn.addEventListener("click", () => addStream("https://myradio24.org/25095", "Радио «Птица»", "ptitsa-cover.jpg"));
+  ["dragenter", "dragover"].forEach(ev => dropZone.addEventListener(ev, e => {
+    e.preventDefault(); dropZone.classList.add("dragover");
+  }));
+  ["dragleave", "drop"].forEach(ev => dropZone.addEventListener(ev, e => {
+    e.preventDefault(); dropZone.classList.remove("dragover");
+  }));
+  dropZone.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space") { e.preventDefault(); playPause(); }
+    if (e.code === "ArrowRight") audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5);
+    if (e.code === "ArrowLeft") audio.currentTime = Math.max(0, audio.currentTime - 5);
+    if (e.code === "ArrowUp") { e.preventDefault(); vol.value = Math.min(100, +vol.value + 5); vol.dispatchEvent(new Event("input")); }
+    if (e.code === "ArrowDown") { e.preventDefault(); vol.value = Math.max(0, +vol.value - 5); vol.dispatchEvent(new Event("input")); }
+  });
+
+  audio.volume = vol.value / 100;
+  setFill(seek); setFill(vol);
+  renderPlaylist();
+
+  addStream("https://myradio24.org/25095", "Радио «Птица»", "ptitsa-cover.jpg");
+
+  document.addEventListener("click", function autoStart() {
+    if (audio.paused) audio.play().catch(() => {});
+    document.removeEventListener("click", autoStart);
+  }, { once: true });
+})();
+</script>
+</body>
+</html>

@@ -36,21 +36,7 @@
     <section id="player" class="player-section">
       <div class="container">
         <h2 class="section-title">Прямой эфир</h2>
-        <div class="player-card">
-          <div class="player-card__art" aria-hidden="true">🐦</div>
-          <div class="player-card__info">
-            <div class="player-card__status">
-              <span class="live-dot"></span>
-              <span id="statusText">Сейчас в эфире</span>
-            </div>
-            <div id="nowPlaying" class="player-card__track">—</div>
-            <audio id="audio" controls preload="none"></audio>
-            <div class="player-card__cta">
-              <button id="playBtn" class="btn btn--primary">▶ Слушать</button>
-            </div>
-          </div>
-        </div>
-        <p class="player-note">Прямой эфир: <code>https://myradio24.org/25095</code></p>
+        <iframe src="audio-player.html" class="player-frame" title="Аудиоплеер Радио «Птица»" loading="lazy"></iframe>
       </div>
     </section>
 
@@ -92,6 +78,5 @@
     </div>
   </footer>
 
-  <script src="js/player.js"></script>
-</body>
+  </body>
 </html>

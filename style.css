@@ -240,6 +240,24 @@ body {
   border-radius: 6px;
 }
 
+.player-frame {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: 640px;
+  margin: 0 auto;
+  border: none;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(28, 43, 58, 0.12);
+}
+
+@media (max-width: 640px) {
+  .player-frame {
+    height: 720px;
+  }
+}
+
 /* SCHEDULE */
 .schedule-grid {
   display: grid;
